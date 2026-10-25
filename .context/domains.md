@@ -17,5 +17,5 @@
 - 2026-10-24: Playwright WebKit downloads fine from cdn.playwright.dev but can't launch (missing system libs:
   libflite, libjxl, libavif, libmanette, libGLESv2, libx264...; no root). Chromium CFT build redirects to
   storage.googleapis.com (rotating Google IPs: 142.250.x, 142.251.x, 173.194.x, 192.178/179.x) → blocked again.
-- 2026-10-25: curriculum.gov.bc.ca granted temporarily via ipset (user ran it; lost on restart). www2.gov.bc.ca (curriculum PDFs) still blocked.
+- 2026-10-25: curriculum.gov.bc.ca granted temporarily via ipset (user ran it; lost on restart). www2.gov.bc.ca (curriculum PDFs) added to allowed-domains too (2026-10-25) — not granted this session.
   WebFetch goes through the container firewall too (ECONNREFUSED when blocked). Added to /workspace/allowed-domains (user asked) — permanent from next container start.

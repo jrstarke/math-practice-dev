@@ -9,3 +9,5 @@ storage.googleapis.com
 
 # BC Ministry of Education curriculum (reference for the learning ladder and hint wording).
 curriculum.gov.bc.ca
+# Downloadable curriculum documents (PDFs) are served from here.
+www2.gov.bc.ca
