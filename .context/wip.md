@@ -1,5 +1,13 @@
 # WIP (updated 2026-10-25)
 
+## Multiplication reorder (branch feat/mult-reorder, 2026-10-25)
+- Levels now 7 = 2-digit × 2–5, 8 = 3-digit × 2–5, 9 = facts 6–9 (BC: multi-digit × 1-digit is Grade 4, 6–9 fact
+  fluency Grade 5). Progress v5 (key math-practice-progress-v5): v4 mult level 7→7, 8→7, 9→8, moved levels clear
+  their window; v4 key never written. 345 tests, Playwright only se-tab (cell now 31px since the build label).
+- Deployed state seen 2026-10-25: dev/main = 6dce415, prod/main = 89d0e75 (mid fix-wave commit, lacks L9-fit fix,
+  update-on-resume, build label) — told user.
+- Shell PATH lost asdf shims mid-session: prefix commands with PATH="$HOME/.asdf/shims:$PATH".
+
 ## Multiplication — MERGED to main 2026-10-25 (HEAD 741e566), not yet pushed to dev/prod
 - Also added (741e566): service worker update check on visibilitychange (home-screen iPad apps resume rather than
   relaunch), and a small build-time label "YYYY-MM-DD HH:MM UTC" under the mute button (__APP_VERSION__ via vite define).

@@ -11,3 +11,6 @@
 - 2026-10-25: Hosting = GitHub Pages on math-practice.jamiestarke.com (prod) + math-practice-dev.jamiestarke.com (dev),
   separate repos, user pushes manually. No progress transfer from the ngrok origin — user accepted she starts fresh
   on the new domain. Progress v2 lives under localStorage key math-practice-progress-v2 (v1 key read-only).
+- 2026-10-25: Multiplication levels reordered to match BC (7 = 2-digit × 2–5, 8 = 3-digit × 2–5, 9 = facts 6–9);
+  2-digit × 6–9 dropped (user OK). Progress v5 remaps saved levels. Curriculum notes: add/sub hints teach column
+  carry/borrow while BC Grade 2 teaches mental strategies (bridging 10, decomposing) — possible future project.

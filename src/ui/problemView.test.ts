@@ -3,7 +3,7 @@ import { initialEntry } from '../core/entry';
 import type { Problem } from '../core/types';
 import { renderColumnProblem, scratchColumns } from './problemView';
 
-const p = (op: Problem['op']): Problem => ({ op, a: 24, b: 3, level: 8 });
+const p = (op: Problem['op']): Problem => ({ op, a: 24, b: 3, level: 7 });
 
 test('scratch boxes: carries for +, borrows for −, none for ×', () => {
   expect(scratchColumns(p('+'))).toEqual([1]);

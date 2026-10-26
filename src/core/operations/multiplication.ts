@@ -23,9 +23,9 @@ export function matchesLevel(p: Problem): boolean {
     case 4: return oneIsExactly(a, b, 3, [2, 9]);
     case 5: return oneIsExactly(a, b, 4, [2, 9]);
     case 6: return (SIX_SET.has(a) && inRange(b, [0, 9])) || (SIX_SET.has(b) && inRange(a, [0, 9]));
-    case 7: return inRange(a, [6, 9]) && inRange(b, [6, 9]);
-    case 8: return inRange(a, [11, 99]) && a % 10 !== 0 && inRange(b, [2, 9]);
-    case 9: return inRange(a, [101, 999]) && a % 10 !== 0 && inRange(b, [2, 5]);
+    case 7: return inRange(a, [11, 99]) && a % 10 !== 0 && inRange(b, [2, 5]);
+    case 8: return inRange(a, [101, 999]) && a % 10 !== 0 && inRange(b, [2, 5]);
+    case 9: return inRange(a, [6, 9]) && inRange(b, [6, 9]);
     default: return false;
   }
 }
@@ -51,44 +51,46 @@ export function generate(level: number, rng: Rng): Problem {
       return { op: '×', a, b, level };
     }
     case 7: {
-      const a = randInt(rng, 6, 9);
-      const b = randInt(rng, 6, 9);
+      // a: 2-digit, never a multiple of 10 (ones digit 1-9); b: 2-5, so only the facts from levels 1-6 are needed.
+      const a = 10 * randInt(rng, 1, 9) + randInt(rng, 1, 9);
+      const b = randInt(rng, 2, 5);
       return { op: '×', a, b, level };
     }
     case 8: {
-      // a: 2-digit, never a multiple of 10 (ones digit 1-9); b: 2-9.
-      const a = 10 * randInt(rng, 1, 9) + randInt(rng, 1, 9);
-      const b = randInt(rng, 2, 9);
+      // a: 3-digit, never a multiple of 10 (ones digit 1-9), tens digit may be 0; b: 2-5.
+      const a = 100 * randInt(rng, 1, 9) + 10 * randInt(rng, 0, 9) + randInt(rng, 1, 9);
+      const b = randInt(rng, 2, 5);
       return { op: '×', a, b, level };
     }
     default: {
-      // level 9: a: 3-digit, never a multiple of 10 (ones digit 1-9), tens digit may be 0; b: 2-5.
-      const a = 100 * randInt(rng, 1, 9) + 10 * randInt(rng, 0, 9) + randInt(rng, 1, 9);
-      const b = randInt(rng, 2, 5);
+      // level 9: the 6-9 facts last (BC expects fluency with these only from Grade 5).
+      const a = randInt(rng, 6, 9);
+      const b = randInt(rng, 6, 9);
       return { op: '×', a, b, level };
     }
   }
 }
 
 export function targetMs(p: Problem): number {
-  if (p.level === 8) return 20000;
-  if (p.level === 9) return 30000;
+  if (p.level === 7) return 20000;
+  if (p.level === 8) return 30000;
   return 8000;
 }
 
+/** Fixed per level, from its largest product (99 × 5 = 495, 999 × 5 = 4995, 9 × 9 = 81), so it never hints at the answer. */
 export function maxAnswerLen(p: Problem): number {
-  if (p.level === 9) return 4;
-  if (p.level === 8) return 3;
+  if (p.level === 8) return 4;
+  if (p.level === 7) return 3;
   return 2;
 }
 
 /**
  * The "N groups of G" reading for a fact pair, deterministic and bounded
  * (totalGroups ≤ 9 always). Rules apply in priority order; first match wins.
- * Levels 8-9 always read the multi-digit factor (`a`) as the group size.
+ * Levels 7-8 always read the multi-digit factor (`a`) as the group size.
  */
 export function groupAssignment(a: number, b: number, level: number): { groupSize: number; totalGroups: number; needsTurnAround: boolean } {
-  if (level === 8 || level === 9) {
+  if (level === 7 || level === 8) {
     return { groupSize: a, totalGroups: b, needsTurnAround: false };
   }
   let groupSize: number;
@@ -122,7 +124,7 @@ function pic(totalGroups: number, groupSize: number, groupsShown: number, groups
 /**
  * A single, fully-revealed part describing an undivided group (levels 1-3,
  * level 6's skip-counted/turn-around/×1 steps): one ten-rod for groupSize
- * 10 (matching levels 8-9's "tens" label convention), otherwise one part
+ * 10 (matching levels 7-8's "tens" label convention), otherwise one part
  * sized to the whole group. Without this, a renderer building each group
  * from `parts` would draw an empty circle.
  */
@@ -156,8 +158,8 @@ type Strategy = { steps: Step[]; finalPicture: PictureState };
 
 /**
  * Two-step skip-counting hint (levels 1-3, and level 6's 2/5/10 cases):
- * all groups are already drawn (every group is shown in full on levels
- * 1-7), so the picture doesn't grow step to step — only the tally does,
+ * all groups are already drawn (every group is shown in full on the
+ * fact levels), so the picture doesn't grow step to step — only the tally does,
  * and it always stops one count short of the total. The counting step
  * highlights the n − 1 groups it counts; she adds the last one.
  */
@@ -211,7 +213,7 @@ function doubleDoubleSteps(n: number, alreadyNamed = false): Strategy {
   return { steps, finalPicture: pic(totalGroups, groupSize, totalGroups, 0, parts.map(x => ({ ...x, revealed: true })), []) };
 }
 
-/** Levels 8-9: mark the place a step works on (that part of the drawn group, that digit of each outline label). */
+/** Levels 7-8: mark the place a step works on (that part of the drawn group, that digit of each outline label). */
 function withPlace(place: Place, picture: PictureState): PictureState {
   return { ...picture, highlightPlace: place };
 }
@@ -265,7 +267,7 @@ function hintSteps(p: Problem): Strategy {
       );
       return { steps: [turnAround, ...strategy.steps], finalPicture: strategy.finalPicture };
     }
-    case 7: {
+    case 9: {
       // Group size is the *bigger* factor, split into 5 + the rest;
       // totalGroups is the smaller factor (spec: "7 × 8 → 7 groups of 8 (5 + 3)").
       const groupSize = Math.max(a, b);
@@ -284,8 +286,8 @@ function hintSteps(p: Problem): Strategy {
       ];
       return { steps, finalPicture: pic(totalGroups, groupSize, totalGroups, 0, parts.map(x => ({ ...x, revealed: true })), []) };
     }
-    case 8: {
-      const { groupSize, totalGroups } = groupAssignment(a, b, 8);
+    case 7: {
+      const { groupSize, totalGroups } = groupAssignment(a, b, 7);
       const tens = Math.floor(groupSize / 10);
       const ones = groupSize % 10;
       const tensValue = tens * 10;
@@ -311,8 +313,8 @@ function hintSteps(p: Problem): Strategy {
       return { steps, finalPicture: pic(totalGroups, groupSize, 1, outlined, parts.map(x => ({ ...x, revealed: true })), []) };
     }
     default: {
-      // level 9
-      const { groupSize, totalGroups } = groupAssignment(a, b, 9);
+      // level 8
+      const { groupSize, totalGroups } = groupAssignment(a, b, 8);
       const h = Math.floor(groupSize / 100);
       const t = Math.floor(groupSize / 10) % 10;
       const o = groupSize % 10;

@@ -79,9 +79,15 @@ other factor so no early hint degenerates into the answer.)
 | 4 | one factor 3, other 2–9 | 3, drawn as 2 + 1 | 7 × 3 → 7 groups of 3 | double, plus one more |
 | 5 | one factor 4, other 2–9 | 4, drawn as 2 + 2 | 6 × 4 → 6 groups of 4 | double, then double again |
 | 6 | one factor from {0, 1, 2, 3, 4, 5, 10}, other 0–9 (mixed review) | the {0–5, 10} factor | 7 × 3 → 7 groups of 3 | turn it around if needed, then that table's strategy |
-| 7 | both factors 6–9 | the bigger factor, drawn as 5 + the rest | 7 × 8 → 7 groups of 8 (5 + 3) | break apart into 5s and the rest |
-| 8 | 2-digit (11–99, not a multiple of 10) × 2–9 | the 2-digit number, as rods + squares | 24 × 3 → 3 groups of 24 | break apart into tens and ones |
-| 9 | 3-digit (101–999, not a multiple of 10) × 2–5 | the 3-digit number, as flats + rods + squares | 214 × 5 → 5 groups of 214 | break apart into hundreds, tens and ones |
+| 7 | 2-digit (11–99, not a multiple of 10) × 2–5 | the 2-digit number, as rods + squares | 24 × 3 → 3 groups of 24 | break apart into tens and ones |
+| 8 | 3-digit (101–999, not a multiple of 10) × 2–5 | the 3-digit number, as flats + rods + squares | 214 × 5 → 5 groups of 214 | break apart into hundreds, tens and ones |
+| 9 | both factors 6–9 | the bigger factor, drawn as 5 + the rest | 7 × 8 → 7 groups of 8 (5 + 3) | break apart into 5s and the rest |
+
+**Reordered 2026-10-25 (progress v5, user decision):** BC expects 2- and 3-digit × 1-digit in Grade 4 but fluency
+with the 6–9 facts only from Grade 5, so the 6–9 facts moved last and the multi-digit levels use × 2–5 (only facts
+from levels 1–6). 2-digit × 6–9 was dropped. Saved levels map 1–6 → same, 7 → 7, 8 → 7, 9 → 8 (moved levels
+start a fresh window). Level references below that predate this note use the old numbers (old 7 = new 9,
+old 8 ≈ new 7, old 9 = new 8).
 
 Notes (my calls): level 9 limits the single digit to 2–5 so the picture stays drawable (BC's own example is
 214 × 5); levels 8–9 exclude multiples of 10 because they don't exercise breaking apart. If both factors are the same

@@ -5,7 +5,8 @@ import { defaultProgress, type OpKey, type Progress } from './core/progress';
  * Each version lives under its own key, so an older build never reads a newer record and resets her progress.
  * Older keys are read once to migrate and never written, so a rollback still finds the last save it understands.
  */
-export const STORAGE_KEY = 'math-practice-progress-v4';
+export const STORAGE_KEY = 'math-practice-progress-v5';
+export const V4_STORAGE_KEY = 'math-practice-progress-v4';
 export const V3_STORAGE_KEY = 'math-practice-progress-v3';
 export const V2_STORAGE_KEY = 'math-practice-progress-v2';
 export const LEGACY_STORAGE_KEY = 'math-practice-progress';
@@ -39,7 +40,9 @@ function hasValidCommonFields(x: Record<string, unknown>): boolean {
     && typeof x.installTipShown === 'boolean';
 }
 
-type ProgressV3 = Omit<Progress, 'version' | 'multiplication'> & { version: 3 };
+/** Same shape as v5; only the meaning of multiplication levels 7-9 differs. */
+type ProgressV4 = Omit<Progress, 'version'> & { version: 4 };
+type ProgressV3 = Omit<ProgressV4, 'version' | 'multiplication'> & { version: 3 };
 type ProgressV2 = Omit<ProgressV3, 'version' | 'unlocked'> & { version: 2 };
 type ProgressV1 = Omit<ProgressV2, 'version' | 'total'> & { version: 1 };
 const OP_KEYS: readonly OpKey[] = ['addition', 'subtraction'];
@@ -75,9 +78,18 @@ function isValidUnlockedV4(x: unknown): boolean {
     && new Set(x).size === x.length;
 }
 
-export function isValidProgress(x: unknown): x is Progress {
-  return isObj(x) && x.version === 4 && hasValidCommonFields(x) && isValidOpState(x.multiplication)
+/** Fields shared by v4 and v5, which differ only in their version number. */
+function hasValidV4Fields(x: Record<string, unknown>): boolean {
+  return hasValidCommonFields(x) && isValidOpState(x.multiplication)
     && isIntIn(x.total, 0, Number.MAX_SAFE_INTEGER) && isValidUnlockedV4(x.unlocked);
+}
+
+function isValidProgressV4(x: unknown): x is ProgressV4 {
+  return isObj(x) && x.version === 4 && hasValidV4Fields(x);
+}
+
+export function isValidProgress(x: unknown): x is Progress {
+  return isObj(x) && x.version === 5 && hasValidV4Fields(x);
 }
 
 /** v1 had no running total: start it at the best streak, as credit for work already done. */
@@ -92,8 +104,22 @@ function upgradeV2(p: ProgressV2): ProgressV3 {
 
 /** v3 players' unlocks carry over as-is; if she already qualifies for multiplication, the path rule
  * announces it naturally on her next at-level answer rather than during this upgrade. */
-function upgradeV3(p: ProgressV3): Progress {
+function upgradeV3(p: ProgressV3): ProgressV4 {
   return { ...p, version: 4, multiplication: initialOpState() };
+}
+
+/**
+ * v5 reordered multiplication's top levels (v4: 7 = facts 6-9, 8 = 2-digit × 2-9, 9 = 3-digit × 2-5;
+ * v5: 7 = 2-digit × 2-5, 8 = 3-digit × 2-5, 9 = facts 6-9). Each old level goes to the new level closest to
+ * what she was practising; a moved level's window is cleared, since its scores were for other problems.
+ */
+const V4_MULTIPLICATION_LEVEL: Record<number, number> = { 7: 7, 8: 7, 9: 8 };
+
+function upgradeV4(p: ProgressV4): Progress {
+  const { level } = p.multiplication;
+  const moved = level in V4_MULTIPLICATION_LEVEL;
+  const multiplication = moved ? { ...p.multiplication, level: V4_MULTIPLICATION_LEVEL[level], window: [] } : p.multiplication;
+  return { ...p, version: 5, multiplication };
 }
 
 function readJson(storage: KV, key: string): unknown {
@@ -111,12 +137,14 @@ export function createStore(storage: KV | null): ProgressStore {
       try {
         const current = readJson(storage, STORAGE_KEY);
         if (isValidProgress(current)) return current;
+        const v4 = readJson(storage, V4_STORAGE_KEY);
+        if (isValidProgressV4(v4)) return upgradeV4(v4);
         const v3 = readJson(storage, V3_STORAGE_KEY);
-        if (isValidProgressV3(v3)) return upgradeV3(v3);
+        if (isValidProgressV3(v3)) return upgradeV4(upgradeV3(v3));
         const v2 = readJson(storage, V2_STORAGE_KEY);
-        if (isValidProgressV2(v2)) return upgradeV3(upgradeV2(v2));
+        if (isValidProgressV2(v2)) return upgradeV4(upgradeV3(upgradeV2(v2)));
         const v1 = readJson(storage, LEGACY_STORAGE_KEY);
-        return isValidProgressV1(v1) ? upgradeV3(upgradeV2(upgradeV1(v1))) : defaultProgress();
+        return isValidProgressV1(v1) ? upgradeV4(upgradeV3(upgradeV2(upgradeV1(v1)))) : defaultProgress();
       } catch {
         return defaultProgress();
       }

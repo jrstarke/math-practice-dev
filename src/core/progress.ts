@@ -4,7 +4,7 @@ import type { Op } from './types';
 export type OpKey = 'addition' | 'subtraction' | 'multiplication';
 
 export interface Progress {
-  version: 4;
+  version: 5;
   unlocked: OpKey[]; // operations in the mix; once unlocked, always unlocked
   addition: OpState;
   subtraction: OpState;
@@ -18,7 +18,7 @@ export interface Progress {
 
 export function defaultProgress(): Progress {
   return {
-    version: 4,
+    version: 5,
     unlocked: ['addition'],
     addition: initialOpState(),
     subtraction: initialOpState(),

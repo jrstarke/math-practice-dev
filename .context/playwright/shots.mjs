@@ -8,7 +8,7 @@ const views = process.env.VIEWS ? JSON.parse(process.env.VIEWS) : [
   ['ipad-p', 820, 1180], ['ipad-l', 1180, 820], ['ipad-l-tab', 1180, 745], ['ipad102-l-tab', 1080, 740], ['ipad102-p', 810, 1080], ['ipad102-p-tab', 810, 1005], ['se-land', 667, 375], ['ip15-land', 852, 393], ['ip15-land-notch', 852, 393],
   ['ipad6-l', 1024, 768], ['ipad6-l-tabs', 1024, 665], ['ipad102-l-tabs', 1080, 707], ['ipad6-p-tabs', 768, 918],
 ];
-const STORAGE_KEY = 'math-practice-progress-v4';
+const STORAGE_KEY = 'math-practice-progress-v5';
 const ATTEMPT_CAP = 20;
 
 // One fixture per multiplication level under test. addition/subtraction stay calibrated
@@ -20,7 +20,7 @@ const MULT_LEVELS = [1, 7, 8, 9];
 const nine = { level: 9, window: [], calibrationLeft: 0 };
 function progressFor(level) {
   return {
-    version: 4,
+    version: 5,
     unlocked: ['addition', 'subtraction', 'multiplication'],
     addition: nine,
     subtraction: nine,

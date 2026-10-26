@@ -27,9 +27,9 @@ test.each([
   [3, 4, 4], [4, 3, 4], [3, 2, 4], [3, 9, 4],
   [4, 6, 5], [6, 4, 5], [4, 2, 5], [4, 9, 5],
   [0, 7, 6], [1, 8, 6], [10, 0, 6], [5, 0, 6], [3, 9, 6], [10, 9, 6],
-  [6, 7, 7], [9, 9, 7], [6, 6, 7],
-  [24, 3, 8], [11, 2, 8], [99, 9, 8],
-  [305, 3, 9], [101, 2, 9], [999, 5, 9],
+  [24, 3, 7], [11, 2, 7], [99, 5, 7],
+  [305, 3, 8], [101, 2, 8], [999, 5, 8],
+  [6, 7, 9], [9, 9, 9], [6, 6, 9],
 ] as const)('%i × %i is level %i', (a, b, level) =>
   expect(matchesLevel({ op: '×', a, b, level })).toBe(true));
 
@@ -40,27 +40,35 @@ test.each([
   [3, 1, 4], [3, 10, 4],
   [4, 1, 5], [4, 10, 5],
   [11, 9, 6], [7, 8, 6],
-  [5, 9, 7], [10, 6, 7],
-  [10, 2, 8], [100, 2, 8], [24, 10, 8], [24, 1, 8],
-  [100, 2, 9], [1000, 2, 9], [305, 1, 9], [305, 10, 9], [305, 6, 9],
+  [10, 2, 7], [100, 2, 7], [24, 10, 7], [24, 1, 7], [24, 6, 7], [78, 7, 7],
+  [100, 2, 8], [1000, 2, 8], [305, 1, 8], [305, 10, 8], [305, 6, 8],
+  [5, 9, 9], [10, 6, 9], [24, 3, 9],
 ] as const)('%i × %i is NOT level %i', (a, b, level) =>
   expect(matchesLevel({ op: '×', a, b, level })).toBe(false));
 
-test.each([
-  [1, 8000], [2, 8000], [3, 8000], [4, 8000], [5, 8000], [6, 8000], [7, 8000],
-  [8, 20000], [9, 30000],
-] as const)('targetMs for level %i is %i', (level, ms) => {
-  const a = level === 8 ? 24 : level === 9 ? 305 : 7;
-  const b = level === 8 ? 3 : level === 9 ? 3 : 2;
-  expect(targetMs({ op: '×', a, b, level })).toBe(ms);
+/** A representative problem for each level: 2-digit at 7, 3-digit at 8, a fact everywhere else. */
+const sample = (level: number) => ({
+  op: '×' as const,
+  a: level === 7 ? 24 : level === 8 ? 305 : 7,
+  b: level === 7 || level === 8 ? 3 : level === 9 ? 8 : 2,
+  level,
 });
 
 test.each([
-  [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 3], [9, 4],
-] as const)('maxAnswerLen for level %i is %i', (level, len) => {
-  const a = level === 8 ? 24 : level === 9 ? 305 : 7;
-  const b = level === 8 ? 3 : level === 9 ? 3 : 2;
-  expect(maxAnswerLen({ op: '×', a, b, level })).toBe(len);
+  [1, 8000], [2, 8000], [3, 8000], [4, 8000], [5, 8000], [6, 8000],
+  [7, 20000], [8, 30000], [9, 8000],
+] as const)('targetMs for level %i is %i', (level, ms) =>
+  expect(targetMs(sample(level))).toBe(ms));
+
+test.each([
+  [1, 2], [2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 3], [8, 4], [9, 2],
+] as const)('maxAnswerLen for level %i is %i', (level, len) =>
+  expect(maxAnswerLen(sample(level))).toBe(len));
+
+test('each level\'s answer width fits its largest possible product (99 × 5, 999 × 5, 9 × 9)', () => {
+  expect(String(99 * 5)).toHaveLength(maxAnswerLen(sample(7)));
+  expect(String(999 * 5)).toHaveLength(maxAnswerLen(sample(8)));
+  expect(String(9 * 9)).toHaveLength(maxAnswerLen(sample(9)));
 });
 
 test.each([
@@ -72,9 +80,9 @@ test.each([
   expect(r.totalGroups).toBe(groups);
 });
 
-test('groupAssignment for levels 8-9 always uses a as groupSize, b as totalGroups', () => {
-  expect(groupAssignment(24, 3, 8)).toEqual({ groupSize: 24, totalGroups: 3, needsTurnAround: false });
-  expect(groupAssignment(305, 4, 9)).toEqual({ groupSize: 305, totalGroups: 4, needsTurnAround: false });
+test('groupAssignment for levels 7-8 always uses a as groupSize, b as totalGroups', () => {
+  expect(groupAssignment(24, 3, 7)).toEqual({ groupSize: 24, totalGroups: 3, needsTurnAround: false });
+  expect(groupAssignment(305, 4, 8)).toEqual({ groupSize: 305, totalGroups: 4, needsTurnAround: false });
 });
 
 test('no hint step states or pictures the answer; the trailing step always does, at every level', () => {
@@ -149,14 +157,14 @@ test('picture.parts always reconstructs groupSize (no empty-circle groups for a 
   }
 });
 
-test('groupsOutlined is always 0 on levels 1-7, and groupsShown is 0 or 1 on levels 8-9', () => {
+test('groupsOutlined is always 0 on the fact levels (1-6, 9), and groupsShown is 0 or 1 on levels 7-8', () => {
   for (let level = 1; level <= 9; level++) {
     const rng = mulberry32(level + 1300);
     for (let i = 0; i < 300; i++) {
       const p = generate('×', level, rng);
       for (const s of solve(p)) {
         if (!s.picture) continue;
-        if (level <= 7) {
+        if (level !== 7 && level !== 8) {
           expect(s.picture.groupsOutlined).toBe(0);
         } else {
           expect([0, 1]).toContain(s.picture.groupsShown);
@@ -166,8 +174,8 @@ test('groupsOutlined is always 0 on levels 1-7, and groupsShown is 0 or 1 on lev
   }
 });
 
-test('level-9 zero-tens case: no "0 tens" or bare "+ 0", and tens part omitted', () => {
-  const steps = solve({ op: '×', a: 305, b: 3, level: 9 });
+test('level-8 zero-tens case: no "0 tens" or bare "+ 0", and tens part omitted', () => {
+  const steps = solve({ op: '×', a: 305, b: 3, level: 8 });
   for (const s of steps) {
     expect(s.text).not.toContain('0 tens');
     expect(s.text).not.toMatch(/\+\s*0(\D|$)/);
@@ -235,9 +243,17 @@ test('level 6 keeps the 2/5/10 cases as skip counting and 0/1 as one question', 
   expect(hintTexts(1, 4, 6)).toHaveLength(1);
 });
 
-test('level 8 says "1 ten" (singular) for factors 11-19', () => {
-  expect(hintTexts(14, 3, 8)[1]).toBe('The tens: 3 groups of 1 ten is 3 tens = 30. How many ones?');
-  expect(hintTexts(24, 3, 8)[1]).toBe('The tens: 3 groups of 2 tens is 6 tens = 60. How many ones?');
+test('level 7 says "1 ten" (singular) for factors 11-19', () => {
+  expect(hintTexts(14, 3, 7)[1]).toBe('The tens: 3 groups of 1 ten is 3 tens = 30. How many ones?');
+  expect(hintTexts(24, 3, 7)[1]).toBe('The tens: 3 groups of 2 tens is 6 tens = 60. How many ones?');
+});
+
+test('level 9 (facts 6-9) breaks the bigger factor into 5 and the rest', () => {
+  expect(hintTexts(7, 8, 9)).toEqual([
+    '7 groups of 8. Split each 8 into 5 and 3.',
+    '7 groups of 5 = 35. How many in 7 groups of 3?',
+    '7 groups of 3 = 21. Now add 35 + 21.',
+  ]);
 });
 
 test('skip-count hints highlight the n − 1 counted groups on the counting step only', () => {
@@ -251,9 +267,9 @@ test('skip-count hints highlight the n − 1 counted groups on the counting step
   }
 });
 
-test('level 8-9 hints highlight the place being worked on', () => {
+test('level 7-8 hints highlight the place being worked on', () => {
   const places = (a: number, b: number, level: number) => solve({ op: '×', a, b, level }).map(s => s.picture?.highlightPlace);
-  expect(places(24, 3, 8)).toEqual([undefined, 'tens', 'ones', undefined]);
-  expect(places(214, 5, 9)).toEqual(['hundreds', 'tens', 'ones', undefined, undefined]);
-  expect(places(305, 3, 9)).toEqual(['hundreds', 'ones', undefined, undefined]);
+  expect(places(24, 3, 7)).toEqual([undefined, 'tens', 'ones', undefined]);
+  expect(places(214, 5, 8)).toEqual(['hundreds', 'tens', 'ones', undefined, undefined]);
+  expect(places(305, 3, 8)).toEqual(['hundreds', 'ones', undefined, undefined]);
 });

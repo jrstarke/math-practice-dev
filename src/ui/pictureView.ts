@@ -30,7 +30,7 @@ function renderPart(part: PicturePart, colorClass: string | null, highlighted: b
 /** One full "groups of" group, built from the shared parts breakdown. Two colours
  * distinguish revealed parts only once more than one part is revealed — a single
  * revealed part (or none) stays monochrome. `highlighted` marks a group a skip-count
- * hint is counting; `place` marks the part a level 8-9 hint is working on. */
+ * hint is counting; `place` marks the part a level 7-8 hint is working on. */
 function renderGroup(parts: PicturePart[], highlighted: boolean, place: Place | undefined): HTMLElement {
   const useTwoColors = parts.filter(p => p.revealed).length > 1;
   let revealedIndex = 0;
@@ -48,7 +48,7 @@ function renderGroup(parts: PicturePart[], highlighted: boolean, place: Place | 
 const PLACE_INDEX: Record<Place, number> = { ones: 0, tens: 1, hundreds: 2 }; // digits from the right
 
 /**
- * A remaining, undetailed group (levels 8-9): the same dashed circle as the drawn group,
+ * A remaining, undetailed group (levels 7-8): the same dashed circle as the drawn group,
  * holding the same blocks as invisible spacers so it is exactly the drawn group's size at
  * every --picture-cell scale, with its value written across it. Each label digit is its own
  * span so a hint can highlight the digit for the place it is working on.
@@ -139,7 +139,7 @@ function shrinkToFit(container: HTMLElement, budget: number): boolean {
   // the block unit's 4px legibility floor (--unit in styles.css) is what sets the picture's size,
   // so lower that floor step by step until it fits. Every block is a multiple of the unit, so
   // flats/rods/squares keep their exact base-ten proportions — just drawn smaller (spec: "level 9
-  // may draw flats smaller").
+  // may draw flats smaller" — the 3-digit level, now level 8).
   for (const floor of UNIT_FLOOR_STEPS) {
     if (fits(container, budget)) return true;
     container.style.setProperty('--unit-floor', floor);
