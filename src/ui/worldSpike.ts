@@ -1,3 +1,5 @@
+import { LEVEL_UPS, LEVEL_UP_WORDS, STAR_STYLES, dayTier, dayWords, walkWords, type BigMoment } from '../core/robo';
+
 // THROWAWAY SPIKE (Robo's world, release 1 blur check). Not for merging.
 // A static sample world behind the whole app, with a corner button cycling blur / sharp / off and a frame-rate
 // readout, so the blur's cost and the math's readability can be judged on her iPad.
@@ -51,7 +53,24 @@ body[data-spike-card] .answer-row .cell:empty { background: #fff3dd; }
 .spike-toggle { position: fixed; left: 8px; bottom: 8px; z-index: 50; display: flex; gap: 6px; align-items: center;
   font: 600 12px/1 system-ui; color: #2b2a4c; background: rgba(255,255,255,.88); border-radius: 8px; padding: 6px 8px; box-shadow: 0 2px 0 #e6dccb; }
 .spike-toggle select { font: inherit; }
+.spike-moves { bottom: auto; top: 56px; left: 8px; }
+.spike-moves button { font: inherit; background: #fff; border: 1px solid #cfc6b5; border-radius: 6px; padding: 8px 10px; }
 `;
+
+interface SpikeRobo { play(big: BigMoment): void; up(): void; down(): void; surprise(): void }
+const robo = () => (window as unknown as { __spikeRobo?: SpikeRobo }).__spikeRobo;
+
+/** Every Robo move, in order, for the next / replay buttons. */
+const MOVES: [string, () => void][] = [
+  ['hop up beside the problem', () => robo()?.up()],
+  ['hop back to its spot', () => robo()?.down()],
+  ['surprise (wave / bounce)', () => robo()?.surprise()],
+  ...STAR_STYLES.map((style): [string, () => void] => [`20 stars: ${style}`, () => robo()?.play({ kind: 'stars', style, words: walkWords(40) })]),
+  ...[2, 5, 10].map((robots): [string, () => void] => [`100s: conga of ${robots}`, () => robo()?.play({ kind: 'conga', robots, words: walkWords(robots * 100 - 100) })]),
+  ...LEVEL_UPS.map((style): [string, () => void] => [`level up: ${style}`, () => robo()?.play({ kind: 'levelUp', style, words: LEVEL_UP_WORDS[style] })]),
+  ...[1, 3, 7, 12].map((days): [string, () => void] => [`day streak: day ${days}`, () => robo()?.play({ kind: 'day', days, tier: dayTier(days), words: dayWords(days) })]),
+  ['unlock kick', () => robo()?.play({ kind: 'kick', words: 'New: division!' })],
+];
 
 export function mountWorldSpike(): void {
   const style = document.createElement('style');
@@ -70,6 +89,22 @@ export function mountWorldSpike(): void {
   const fpsEl = document.createElement('span');
   box.append('world:', select, fpsEl);
   document.body.append(box);
+
+  // Robo's moves on demand: next plays the following move, replay plays the same one again.
+  let move = -1;
+  const moves = document.createElement('div');
+  moves.className = 'spike-toggle spike-moves';
+  const name = document.createElement('span');
+  const next = document.createElement('button');
+  next.textContent = 'next ▶';
+  const replay = document.createElement('button');
+  replay.textContent = 'replay ↻';
+  const run = () => { name.textContent = `${move + 1}/${MOVES.length} ${MOVES[move][0]}`; MOVES[move][1](); };
+  next.addEventListener('click', () => { move = (move + 1) % MOVES.length; run(); });
+  replay.addEventListener('click', () => { if (move < 0) move = 0; run(); });
+  name.textContent = 'Robo moves';
+  moves.append(next, replay, name);
+  document.body.append(moves);
   const apply = () => {
     select.value = mode;
     world.dataset.mode = mode;
