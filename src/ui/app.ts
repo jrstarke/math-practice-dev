@@ -259,10 +259,17 @@ export function mountApp(deps: AppDeps): { destroy(): void } {
   }
 
   // THROWAWAY SPIKE hook: lets the test panel (src/ui/worldSpike.ts) play Robo's moves on demand.
+  const snap = (f: () => void) => {
+    document.documentElement.classList.add('spike-snap');
+    f();
+    void document.body.offsetWidth;
+    document.documentElement.classList.remove('spike-snap');
+  };
   (window as unknown as { __spikeRobo?: unknown }).__spikeRobo = {
     play: playMoment,
-    up: roboUp,
-    down: () => { roboWanted = false; roboDown(); },
+    // Each hop first snaps (no transition) to where it starts, so replaying it always shows the move.
+    up: () => { snap(() => { roboWanted = false; roboDown(); }); roboUp(); },
+    down: () => { snap(roboUp); roboWanted = false; roboDown(); },
     surprise: () => {
       endMoment();
       momentTimer = later(() => { momentTimer = null; endMoment(); }, robo.surprise());

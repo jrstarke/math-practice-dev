@@ -53,6 +53,7 @@ body[data-spike-card] .answer-row .cell:empty { background: #fff3dd; }
 .spike-toggle { position: fixed; left: 8px; bottom: 8px; z-index: 50; display: flex; gap: 6px; align-items: center;
   font: 600 12px/1 system-ui; color: #2b2a4c; background: rgba(255,255,255,.88); border-radius: 8px; padding: 6px 8px; box-shadow: 0 2px 0 #e6dccb; }
 .spike-toggle select { font: inherit; }
+.spike-snap, .spike-snap * { transition: none !important; animation: none !important; }
 .spike-moves { bottom: auto; top: 56px; left: 8px; }
 .spike-moves button { font: inherit; background: #fff; border: 1px solid #cfc6b5; border-radius: 6px; padding: 8px 10px; }
 `;
