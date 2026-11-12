@@ -4,6 +4,7 @@ import { mulberry32 } from './core/rng';
 import { createStore } from './storage';
 import { mountApp } from './ui/app';
 import { createSound } from './ui/sound';
+import { mountWorldSpike } from './ui/worldSpike';
 
 function safeLocalStorage(): Storage | null {
   try {
@@ -31,6 +32,8 @@ mountApp({
   version: __APP_VERSION__,
   roboRng: devRoboRng(),
 });
+
+mountWorldSpike(); // THROWAWAY SPIKE: blur check on her iPad
 
 registerSW({
   immediate: true,
